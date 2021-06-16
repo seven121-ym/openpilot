@@ -34,6 +34,9 @@ mkdir -p $INSTALL_DIR
 cp -r $DIR/acados/lib $INSTALL_DIR
 rm $INSTALL_DIR/lib/*.json
 
+cp -r $DIR/acados/include $DIR
+
+cp -r $DIR/acados/interfaces/acados_template/acados_template $DIR/../../pyextra
 if [ -z "$SKIP_EXTRAS" ]; then
   pip3 install -e $DIR/acados/interfaces/acados_template
 fi
