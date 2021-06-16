@@ -2,7 +2,6 @@ from acados_template import AcadosModel
 from casadi import SX, vertcat, sin, cos
 import scipy.linalg
 
-
 from acados_template import AcadosOcp, AcadosOcpSolver
 import numpy as np
 from selfdrive.controls.lib.drive_helpers import MPC_N as N
@@ -51,7 +50,7 @@ def gen_lat_model():
     return model
 
 
-def gen_lat_mpc_solver():
+def gen_lat_mpc_solver(build: bool):
   model = gen_lat_model()
 
   ocp = AcadosOcp()
@@ -110,12 +109,12 @@ def gen_lat_mpc_solver():
   ocp.solver_options.tf = Tf
   ocp.solver_options.shooting_nodes = T_IDXS[:N+1]
 
-  acados_ocp_solver = AcadosOcpSolver(ocp, json_file='acados_ocp_' + model.name + '.json')
+  acados_ocp_solver = AcadosOcpSolver(ocp, json_file='acados_ocp_' + model.name + '.json', build=build)
   return acados_ocp_solver
 
 class LateralMpc():
   def __init__(self):
-    self.solver = gen_lat_mpc_solver()
+    self.solver = gen_lat_mpc_solver(False)
     self.x_sol = np.zeros((N+1, 4))
     self.u_sol = np.zeros((N))
 
@@ -140,3 +139,7 @@ class LateralMpc():
 
     self.x_sol = np.array([self.solver.get(i, 'x') for i in range(N+1)])
     self.u_sol = np.array([self.solver.get(i, 'u') for i in range(N)])
+
+
+if __name__ == "__main__":
+  gen_lat_mpc_solver(True)

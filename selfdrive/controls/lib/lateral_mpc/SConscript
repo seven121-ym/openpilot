@@ -1,0 +1,11 @@
+Import('env', 'arch')
+
+# TODO
+if GetOption('mpc_generate'):
+  pass
+
+gen = "c_generated_code"
+generated_files = Glob(f"{gen}/**/*.c")
+env.Command([f"{gen}/main_lat", f"{gen}/main_sim_lat"],
+            generated_files,
+            f"cd {Dir(gen).abspath} && make")
