@@ -69,6 +69,10 @@ void MainWindow::openSettings() {
 void MainWindow::closeSettings() {
   if(onboardingDone) {
     main_layout->setCurrentWidget(homeWindow);
+
+    if (QUIState::ui_state.scene.started) {
+      emit homeWindow->showSidebar(false);
+    }
   }
 }
 
