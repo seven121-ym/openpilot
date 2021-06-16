@@ -1,10 +1,16 @@
-from acados_template import AcadosModel
-from casadi import SX, vertcat, sin, cos
-import scipy.linalg
+import os
+from common.basedir import BASEDIR
 
-from acados_template import AcadosOcp, AcadosOcpSolver
+lib_path = os.path.join(BASEDIR, "phonelibs/acados/x86_64/lib")
+os.environ["LD_LIBRARY_PATH"] = os.environ.get("LD_LIBRARY_PATH", "") + ":" + lib_path
+
 import numpy as np
+import scipy.linalg
+from acados_template import AcadosModel, AcadosOcp, AcadosOcpSolver
+from casadi import SX, vertcat, sin, cos
+
 from selfdrive.controls.lib.drive_helpers import MPC_N as N
+
 
 def index_function(idx, max_val=192):
   return (max_val/1024)*(idx**2)
@@ -109,6 +115,8 @@ def gen_lat_mpc_solver(build: bool):
   ocp.solver_options.tf = Tf
   ocp.solver_options.shooting_nodes = T_IDXS[:N+1]
 
+  lat_mpc_dir = os.path.dirname(os.path.abspath(__file__))
+  ocp.code_export_directory = os.path.join(lat_mpc_dir, "c_generated_code")
   acados_ocp_solver = AcadosOcpSolver(ocp, json_file='acados_ocp_' + model.name + '.json', build=build)
   return acados_ocp_solver
 

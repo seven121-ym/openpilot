@@ -36,13 +36,12 @@ lenv["ENV"]["ACADOS_SOURCE_DIR"] = Dir("#phonelibs/acados/acados").abspath
 
 lenv.Clean(generated_files, Dir(gen))
 
-if GetOption('mpc_generate'):
-  import os
-  libpath = Dir(f"#phonelibs/acados/{arch}/lib").abspath
-  lenv["ENV"]["LD_LIBRARY_PATH"] = os.getenv("LD_LIBRARY_PATH", "") + libpath
-  lenv.Command(generated_files,
-               ["lat_mpc.py"],
-               f"cd {Dir('.').abspath} && python lat_mpc.py")
+import os
+libpath = Dir(f"#phonelibs/acados/{arch}/lib").abspath
+lenv["ENV"]["LD_LIBRARY_PATH"] = os.getenv("LD_LIBRARY_PATH", "") + libpath
+lenv.Command(generated_files,
+             ["lat_mpc.py"],
+             f"cd {Dir('.').abspath} && python lat_mpc.py")
 
 lenv.Command(File(f"{gen}/libacados_ocp_solver_lat.so"),
              generated_files,
