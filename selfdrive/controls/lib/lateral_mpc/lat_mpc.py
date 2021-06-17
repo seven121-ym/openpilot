@@ -86,6 +86,7 @@ def gen_lat_mpc_solver(build: bool):
 
   ocp.cost.yref = np.zeros((3, ))
   ocp.cost.yref_e = np.zeros((2, ))
+  # TODO hacky weights to keep behavior the same
   ocp.model.cost_y_expr = vertcat(y_ego,
                                   ((v_ego +5.0) * psi_ego),
                                   ((v_ego +5.0) * 4 * curv_rate))
@@ -128,8 +129,9 @@ class LateralMpc():
   def set_weights(self, path_weight, heading_weight, steer_rate_weight):
     W = np.diag([path_weight, heading_weight, steer_rate_weight])
     for i in range(N):
-      self.solver.cost_set(i, 'W', (T_IDXS[i+1] - T_IDXS[i]) * W)
-    self.solver.cost_set(N, 'W', 3*W[:2,:2]/20.)
+      self.solver.cost_set(i, 'W', W)
+    # TODO hacky weights to keep behavior the same
+    self.solver.cost_set(N, 'W', (3/20.)*W[:2,:2])
 
   def run(self, x0, v_ego, car_rotation_radius, y_pts, heading_pts):
     self.solver.constraints_set(0, "lbx", x0)
