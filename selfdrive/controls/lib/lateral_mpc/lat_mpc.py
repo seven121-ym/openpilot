@@ -1,7 +1,7 @@
 import os
 from common.basedir import BASEDIR
 
-lib_path = os.path.join(BASEDIR, "phonelibs/acados/x86_64/lib")
+lib_path = os.path.join(BASEDIR, "phonelibs/acados/x86_64/lib/")
 os.environ["LD_LIBRARY_PATH"] = os.environ.get("LD_LIBRARY_PATH", "") + ":" + lib_path
 
 import numpy as np
@@ -87,19 +87,18 @@ def gen_lat_mpc_solver(build: bool):
   ocp.cost.yref = np.zeros((3, ))
   ocp.cost.yref_e = np.zeros((2, ))
   ocp.model.cost_y_expr = vertcat(y_ego,
-                                  (v_ego +5.0) * psi_ego,
-                                  (v_ego +5.0) * 4 * curv_rate)
+                                  ((v_ego +5.0) * psi_ego),
+                                  ((v_ego +5.0) * 4 * curv_rate))
   ocp.model.cost_y_expr_e = vertcat(y_ego,
-                                  (v_ego +5.0) * psi_ego)
-  ocp.parameter_values = np.array([20., 1.4])
+                                    ((2.*v_ego +5.0) * psi_ego))
+  ocp.parameter_values = np.array([0., .0])
 
   # set constraints
   ocp.constraints.constr_type = 'BGH'
-  x0 = np.array([0.0, -1.0, 0.0, 0.0])
-  ocp.constraints.x0 = x0
   ocp.constraints.idxbx = np.array([2,3])
   ocp.constraints.ubx = np.array([np.radians(90), np.radians(50)])
   ocp.constraints.lbx = np.array([-np.radians(90), -np.radians(50)])
+  x0 = np.array([0.0, -1.0, 0.0, 0.0])
   ocp.constraints.x0 = x0
 
   ocp.solver_options.qp_solver = 'FULL_CONDENSING_QPOASES'
@@ -129,8 +128,8 @@ class LateralMpc():
   def set_weights(self, path_weight, heading_weight, steer_rate_weight):
     W = np.diag([path_weight, heading_weight, steer_rate_weight])
     for i in range(N):
-      self.solver.cost_set(i, 'W', 20 * (T_IDXS[i+1] - T_IDXS[i]) * W)
-    self.solver.cost_set(N, 'W', 3*W[:2,:2])
+      self.solver.cost_set(i, 'W', (T_IDXS[i+1] - T_IDXS[i]) * W)
+    self.solver.cost_set(N, 'W', 3*W[:2,:2]/20.)
 
   def run(self, x0, v_ego, car_rotation_radius, y_pts, heading_pts):
     self.solver.constraints_set(0, "lbx", x0)
